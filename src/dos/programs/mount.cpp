@@ -670,25 +670,6 @@ static std::optional<std::string> find_remove_option_value(CommandLine& cmd,
 	return value;
 }
 
-// Returns true for DOSBox-X IDE slot values: `auto`, `none`, or a controller
-// number with an optional master/slave suffix (e.g., `1`, `2m`, `1s`).
-static bool is_ide_slot_value(const std::string& value)
-{
-	if (iequals(value, "auto") || iequals(value, "none")) {
-		return true;
-	}
-
-	const auto has_controller = !value.empty() && value[0] >= '1' &&
-	                            value[0] <= '9';
-
-	const auto has_valid_suffix = value.size() == 1 ||
-	                              (value.size() == 2 &&
-	                               (iequals(value.substr(1), "m") ||
-	                                iequals(value.substr(1), "s")));
-
-	return has_controller && has_valid_suffix;
-}
-
 // Sets:
 //   params.type   (from the -t option)
 //   params.roflag (from the -ro option)
@@ -755,21 +736,9 @@ bool MOUNT::ParseArguments(MountParameters& params, bool& explicit_fs,
 		}
 	}
 
-	// Parse -ide. The optional IDE slot value (e.g., `-ide 2m`) is only
-	// accepted for DOSBox-X compatibility and is ignored. Anything else
-	// following -ide (e.g., a path) is left on the command line.
-	std::string ide_value = {};
-
-	while (cmd->FindExist("-ide")) {
-		params.is_ide = true;
-
-		if (cmd->FindString("-ide", ide_value) &&
-		    is_ide_slot_value(ide_value)) {
-			cmd->FindString("-ide", ide_value, true);
-		} else {
-			cmd->FindExist("-ide", true);
-		}
-	}
+	// Parse -ide. It is a flag, so anything following it is left on the
+	// command line.
+	params.is_ide = cmd->FindExistRemoveAll("-ide");
 
 	if (params.is_ide && (params.type == MountType::CdRomImage)) {
 		IDE_Get_Next_Cable_Slot(params.ide_index, params.is_second_cable_slot);

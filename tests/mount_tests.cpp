@@ -760,15 +760,6 @@ TEST_F(MountTest, ResolvesPathThroughAlreadyMountedDosDrive)
 	EXPECT_EQ(via_dos_path->drive, 'J');
 }
 
-TEST_F(MountTest, IdeFlagAsStringValueAlsoSetsIsIde)
-{
-	const auto result = Mount("3 " + P("bootable.img") +
-	                          " -t hdd -size 512,63,16,100 -ide 1");
-	ASSERT_TRUE(result.has_value());
-	EXPECT_TRUE(result->is_ide);
-	EXPECT_EQ(result->paths.size(), 1);
-}
-
 // ---------------------------------------------------------------------
 // Extension-based auto-detection when no -t is given
 // ---------------------------------------------------------------------
@@ -1396,49 +1387,11 @@ TEST_F(MountTest, IdeFlagDoesNotConsumeFollowingPath)
 	EXPECT_NE(result->paths[0].find("bootable.img"), std::string::npos);
 }
 
-TEST_F(MountTest, IdeFlagConsumesMasterSlaveSlotValue)
+TEST_F(MountTest, IdeFlagDoesNotConsumeAnyFollowingValue)
 {
-	const auto result = Mount("3 " + P("bootable.img") +
-	                          " -t hdd -size 512,63,16,100 -ide 2S");
-
-	ASSERT_TRUE(result.has_value());
-
-	EXPECT_TRUE(result->is_ide);
-	EXPECT_EQ(result->paths.size(), 1);
-}
-
-TEST_F(MountTest, IdeFlagConsumesAutoSlotValue)
-{
-	const auto result = Mount("3 " + P("bootable.img") +
-	                          " -t hdd -size 512,63,16,100 -ide auto");
-
-	ASSERT_TRUE(result.has_value());
-
-	EXPECT_TRUE(result->is_ide);
-	EXPECT_EQ(result->paths.size(), 1);
-}
-
-TEST_F(MountTest, IdeFlagSlotValuesAreCaseInsensitive)
-{
-	for (const auto* slot : {"1M", "2s", "AUTO", "None"}) {
-		SCOPED_TRACE(slot);
-
-		const auto result = Mount("3 " + P("bootable.img") +
-		                          " -t hdd -size 512,63,16,100 -ide " + slot);
-
-		ASSERT_TRUE(result.has_value());
-
-		EXPECT_TRUE(result->is_ide);
-		EXPECT_EQ(FileNames(*result),
-		          (std::vector<std::string>{"bootable.img"}));
-	}
-}
-
-TEST_F(MountTest, IdeFlagDoesNotConsumeInvalidSlotValues)
-{
-	// Controller numbers start at 1, have a single digit, and can only be
-	// followed by 'm' (master) or 's' (slave)
-	for (const auto* value : {"0", "10", "1x", "m"}) {
+	// -ide takes no value. DOSBox-X slot values such as `auto` or `2m` are
+	// not recognised and are treated as paths like anything else.
+	for (const auto* value : {"auto", "none", "1", "2m", "0", "1x"}) {
 		SCOPED_TRACE(value);
 
 		const auto result = Mount("3 " + P("bootable.img") +
@@ -1664,7 +1617,7 @@ TEST_F(MountTest, DuplicateFlagsAreNotCollectedAsPaths)
 {
 	const auto result = Mount("3 " + P("bootable.img") +
 	                          " -t hdd -size 512,63,16,100"
-	                          " -ro -ro -pr -pr -ide 2m -ide -ide auto");
+	                          " -ro -ro -pr -pr -ide -ide -ide");
 
 	ASSERT_TRUE(result.has_value());
 
