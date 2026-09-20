@@ -708,7 +708,7 @@ bool MOUNT::ParseArguments(MountParameters& params, bool& explicit_fs,
 	if (const auto option = find_option_missing_value(*cmd); option) {
 		NOTIFY_DisplayWarning(Notification::Source::Console,
 		                      "MOUNT",
-		                      "PROGRAM_MOUNT_MISSING_VALUE",
+		                      "PROGRAM_MISSING_OPTION_VALUE",
 		                      option->c_str());
 		return false;
 	}
@@ -1645,7 +1645,6 @@ void MOUNT::AddMessages()
 	        "%s isn't a directory or valid image file.\n");
 
 	MSG_Add("PROGRAM_MOUNT_ILL_TYPE", "Illegal type %s");
-	MSG_Add("PROGRAM_MOUNT_MISSING_VALUE", "Option '%s' requires a value.\n");
 	MSG_Add("PROGRAM_MOUNT_ALREADY_MOUNTED", "Drive %c already mounted with %s\n");
 	MSG_Add("PROGRAM_MOUNT_UMOUNT_NOT_MOUNTED", "Drive %c isn't mounted.\n");
 
