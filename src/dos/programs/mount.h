@@ -71,9 +71,10 @@ public:
 	std::optional<MountParameters> ProcessArguments(CommandLine* cmd);
 
 private:
-	// Geometry options must be removed from the command line before
-	// processing the paths, but they can only be applied after the mount
-	// type has been auto-detected from the paths.
+	// Like every other option, the geometry options are removed from the
+	// command line before the paths are processed. Their values are held
+	// here because they can only be applied once the mount type is known,
+	// which may require auto-detection from the paths.
 	struct GeometryOptions {
 		std::optional<std::string> freesize = {};
 		std::optional<std::string> size     = {};

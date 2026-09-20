@@ -619,7 +619,7 @@ static std::optional<MountFileSystemType> parse_file_system_type(const std::stri
 	}
 }
 
-// Returns the first option that requires a value but is either the last
+// Returns the first option that requires a value and is either the last
 // argument or is followed by another MOUNT option. Values can otherwise start
 // with a dash (e.g., `-label -DISK-`).
 static std::optional<std::string> find_option_missing_value(const CommandLine& cmd)
@@ -703,8 +703,8 @@ static bool is_ide_slot_value(const std::string& value)
 bool MOUNT::ParseArguments(MountParameters& params, bool& explicit_fs,
                            bool& path_relative_to_last_config)
 {
-	// Reject missing values up front so an option never consumes the next
-	// option as its value
+	// Reject options with missing values upfront, so an option never
+	// consumes the next option as its value
 	if (const auto option = find_option_missing_value(*cmd); option) {
 		NOTIFY_DisplayWarning(Notification::Source::Console,
 		                      "MOUNT",
@@ -1516,8 +1516,10 @@ std::optional<MountParameters> MOUNT::ProcessArguments(CommandLine* cmd)
 		return {};
 	}
 
-	// Remove the geometry options first, otherwise they would be treated as
-	// path arguments
+	// Remove the remaining options; everything left on the command line is
+	// treated as a path. The geometry values can only be applied once the
+	// mount type is known, so they are kept until after the paths have been
+	// processed.
 	const auto geometry_options = ParseGeometryOptions();
 
 	// Get the first path argument
