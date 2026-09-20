@@ -2001,43 +2001,37 @@ static void init_dos_settings(SectionProp& section)
 
 	// DOS locale settings
 
-	pstring = section.AddString("locale_period", WhenIdle, "native");
+	pstring = section.AddString("locale_period", WhenIdle, "historic");
 	pstring->SetHelp(
-	        "Set locale epoch ('native' by default). Possible values:\n"
+	        "Set locale epoch ('historic' by default). Possible values:\n"
 	        "\n"
 	        "  historic:  If data is available for the given country, mimic old DOS behavior\n"
 	        "             when displaying time, dates, or numbers.\n"
 	        "\n"
 	        "  modern:    Follow current day practices for user experience more consistent\n"
-	        "             with typical host systems.\n"
-	        "\n"
-	        "  native:    Re-use current host OS settings, regardless of the country set;\n"
-	        "             use 'modern' data to fill-in the gaps when the DOS locale system\n"
-	        "             is too limited to follow the desktop settings.");
-	pstring->SetValues({"historic", "modern", "native"});
+	        "             with typical host systems.");
+	pstring->SetValues({"historic", "modern"});
 
-	pstring = section.AddString("country", WhenIdle, "auto");
+	pstring = section.AddString("country", WhenIdle, "1");
 	pstring->SetHelp(
-	        "Set DOS country code ('auto' by default). This affects country-specific\n"
-	        "information such as date, time, and decimal formats. If set to 'auto', it\n"
-	        "selects the country code reflecting the host OS settings.\n"
+	        "Set DOS country code ('1' by default, which stands for US English). This affects\n"
+	        "country-specific information such as date, time, and decimal formats.\n"
 	        "\n"
-	        "The list of country codes can be displayed using '--list-countries' command-line\n"
-	        "argument.");
+	        "The list of country codes can be displayed using the '--list-countries' command-\n"
+	        "line argument.\n");
 
 	pstring = section.AddString("keyboardlayout", Deprecated, "");
 	pstring->SetHelp("Renamed to [color=light-green]'keyboard_layout'[reset].");
 
-	pstring = section.AddString("keyboard_layout", OnlyAtStart, "auto");
+	pstring = section.AddString("keyboard_layout", OnlyAtStart, "us");
 	pstring->SetHelp(
-	        "Keyboard layout code ('auto' by default). The list of supported keyboard layout\n"
-	        "codes can be displayed using the '--list-layouts' command-line argument, e.g.,\n"
-	        "'uk' is the British English layout. The layout can be followed by the code page\n"
-	        "number, e.g., 'uk 850' selects a Western European screen font.\n"
+	        "Keyboard layout code ('us' by default). The list of keyboard layout codes can be\n"
+	        "displayed using the '--list-layouts' command-line argument; e.g., 'uk' is the\n"
+	        "British English layout. The layout can be followed by the code page number;\n"
+	        "e.g., 'uk 850' selects a Western European screen font.\n"
 	        "\n"
-	        "Set to 'auto' to guess the values from the host OS settings. After startup, use\n"
-	        "the 'KEYB' command to manage keyboard layouts and code pages (run 'HELP KEYB'\n"
-	        "for details).");
+	        "Use the 'KEYB' command to manage keyboard layouts and code pages at runtime\n"
+	        "(run 'KEYB /?' for details).");
 
 	// COMMAND.COM settings
 
