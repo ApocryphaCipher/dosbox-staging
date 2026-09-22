@@ -1302,8 +1302,8 @@ static void add_dosbox_config_section(const ConfigPtr& conf)
 	auto pstring = section->AddString("language", Always, "us");
 
 	pstring->SetHelp(
-	        "Select the DOS messages language ('auto' by default). Possible values:\n"
-	        "  'de', 'en', 'es', 'fr', 'it', 'nl', 'pl', 'pt_BR' and 'ru'.\n"
+	        "Select the DOS messages language ('en' by default). Possible values are 'de',\n"
+	        "'en', 'es', 'fr', 'it', 'nl', 'pl', 'pt_BR' and 'ru'.\n"
 	        "\n"
 	        "Note: English is built-in; the rest is stored in the bundled\n"
 	        "      'resources/translations' directory.");

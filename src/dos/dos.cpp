@@ -2003,7 +2003,7 @@ static void init_dos_settings(SectionProp& section)
 
 	pstring = section.AddString("locale_period", WhenIdle, "historic");
 	pstring->SetHelp(
-	        "Set locale epoch ('historic' by default). Possible values:\n"
+	        "Set which era of locale data to use ('historic' by default). Possible values:\n"
 	        "\n"
 	        "  historic:  If data is available for the given country, mimic old DOS behavior\n"
 	        "             when displaying time, dates, or numbers.\n"
@@ -2017,21 +2017,32 @@ static void init_dos_settings(SectionProp& section)
 	        "Set DOS country code ('1' by default, which stands for US English). This affects\n"
 	        "country-specific information such as date, time, and decimal formats.\n"
 	        "\n"
-	        "The list of country codes can be displayed using the '--list-countries' command-\n"
-	        "line argument.\n");
+	        "Note: The list of country codes can be displayed using the '--list-countries'\n"
+	        "      command-line argument.");
 
 	pstring = section.AddString("keyboardlayout", Deprecated, "");
 	pstring->SetHelp("Renamed to [color=light-green]'keyboard_layout'[reset].");
 
 	pstring = section.AddString("keyboard_layout", OnlyAtStart, "us");
 	pstring->SetHelp(
-	        "Keyboard layout code ('us' by default). The list of keyboard layout codes can be\n"
-	        "displayed using the '--list-layouts' command-line argument; e.g., 'uk' is the\n"
-	        "British English layout. The layout can be followed by the code page number;\n"
-	        "e.g., 'uk 850' selects a Western European screen font.\n"
+	        "Keyboard layout code ('us' by default). The layout can be followed by the code\n"
+	        "page number; e.g., 'uk 850' selects a Western European keyboard layout and\n"
+	        "screen font. \n"
 	        "\n"
-	        "Use the 'KEYB' command to manage keyboard layouts and code pages at runtime\n"
-	        "(run 'KEYB /?' for details).");
+	        "Notes:\n"
+	        "  - On a real MS-DOS, you must configure the keyboard layout and the screen font\n"
+	        "    separately; DOSBox Staging sets both from the provided layout and code.\n"
+	        "\n"
+	        "  - The list of keyboard layout codes can be displayed using the\n"
+	        "    '--list-layouts' command-line argument; e.g., 'uk' is the British English\n"
+	        "    layout. \n"
+	        "\n"
+	        "  - The list of code pages codes can be displayed using the\n"
+	        "    '--list-code-pages' command-line argument; e.g., `437` is the original\n"
+	        "    OEM-US code page.\n"
+	        "\n"
+	        "  - Use the 'KEYB' command to manage keyboard layouts and code pages at\n"
+	        "    runtime (run 'KEYB /?' for details).");
 
 	// COMMAND.COM settings
 
