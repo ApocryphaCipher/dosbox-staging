@@ -20,6 +20,15 @@ would have. If you're playing a game in another language or want a different
 format, the localisation settings discussed in this section let you change the
 regional behaviour.
 
+Concretely, "localisation" here covers three independent things, each with
+its own setting --- you can change any one without touching the others:
+
+| Setting | Controls | Config key |
+|---|---|---|
+| [Interface language](#interface-language) | The language of DOSBox Staging's own menus and messages | `language` |
+| [Country](#country-and-datetime-formatting) | DOS-level date, time, and number formatting | `country`, `locale_period` |
+| [Keyboard layout and code pages](#keyboard-layout-and-code-pages) | Which characters your keys produce, and which characters the screen can display | `keyboard_layout` |
+
 ## Interface language
 
 The [`language`](#language) setting controls the language of DOSBox Staging's
@@ -58,15 +67,91 @@ layout, determining which characters are produced by which keys. A layout can
 include a code page suffix --- for example, `uk 850` selects the British
 layout with a Western European screen font.
 
-On a real MS-DOS, you must configure the keyboard layout and the screen font
-separately; DOSBox Staging sets both from the provided layout and code.
+On a real MS-DOS machine, you configure the keyboard layout and the screen
+font separately, with different commands. DOSBox Staging simplifies this by
+setting both together from a single `keyboard_layout` value --- but they're
+still two different things underneath, and understanding the difference is
+the key to the rest of this section.
 
-Code pages control which character set is available on screen. DOSBox Staging
-bundles the FreeDOS ISO, KOI, MAC, and WIN code page packages, providing broad
-coverage of Latin, Cyrillic, and Greek scripts. After startup, use the `KEYB`
-command to manage keyboard layouts and code pages (run `KEYB /?` for details)
-, or the `CHCP` command to switch just the code page while keeping the current
-keyboard layout (run `CHCP /?` for details).
+### Keyboard layout vs. code page
+
+**Keyboard layout** is about your *keys*. It's the mapping that decides which
+character each physical key produces --- the reason `Y` and `Z` swap places
+on a German keyboard, or why a key combination produces an accented letter on
+a French one.
+
+**Code page** is about your *screen*. It's the set of 256 characters DOSBox
+can actually draw.
+
+!!! note "Code page = screen font"
+
+    Whenever you see "code page" in DOSBox Staging or in DOS itself, think
+    **screen font**. Changing the code page doesn't touch your keyboard at
+    all --- it changes which characters appear on screen. A program can only
+    show accented letters, box-drawing characters, Cyrillic, Greek, and so on
+    if the active code page actually contains them.
+
+These two are independent: you could, in principle, type on a German keyboard
+while the screen displays the plain US character set, or type on a US
+keyboard while the screen is set up to display Russian text. Even so, each
+keyboard layout has a **default code page** it's normally paired with ---
+for example, the `de` (German) layout defaults to code page 858, and the
+`ru` (Russian) layout defaults to a Cyrillic page. Depending on what you
+need, you can:
+
+<div class="compact" markdown>
+
+- Load a layout with its own default code page (the common case).
+- Load a layout and override which code page it uses --- `uk 850` selects
+  the British layout, but with the Western-European 850 code page instead of
+  the layout's usual 437.
+- Change only the code page and keep whatever layout is already loaded ---
+  this is what the `CHCP` command is for, covered below.
+
+</div>
+
+### Choosing a code page (screen font)
+
+DOSBox Staging bundles a large collection of code pages, covering far more
+than DOS ever shipped with by default. They're grouped into a few families:
+
+<div class="compact" markdown>
+
+- A broad **standard set**, covering the classic, widely-used MS-DOS code
+  pages (437, 850, 852, 866, and many more).
+- An **ISO pack**, covering the ISO 8859 family of Latin code pages.
+- A **KOI pack**, covering KOI8 Cyrillic code pages.
+- A **MAC pack**, covering the classic Mac OS regional code pages.
+- A **WIN pack**, covering the Windows ANSI code pages (1250, 1251, 1252,
+  and so on).
+
+</div>
+
+Together these give broad coverage of Latin, Cyrillic, and Greek scripts,
+plus a scattering of others --- see [below](#finding-out-whats-available) for
+how to list them all.
+
+!!! note "Custom code page files"
+
+    If none of the bundled code pages fit your needs, `KEYB` also accepts a
+    file name for a custom code page file in the standard DOS `.CPI` format
+    (MS-DOS, DR-DOS, and Windows NT `.CPI` files are all supported directly;
+    it needs to actually contain the code page you're asking for). This
+    takes priority over the bundled code pages. FreeDOS-style `.CPX` files
+    are compressed and not read directly --- decompress them first with the
+    third-party `upx` tool.
+
+!!! important "Graphics adapter requirements"
+
+    Changing the screen font requires an **EGA or (S)VGA** emulated video
+    adapter. On older adapters (CGA, MDA, Hercules, PCjr), the hardware itself
+    only has one built-in font, so DOSBox Staging always displays code page
+    437 and `KEYB`/`CHCP` cannot switch it. If you need to change the screen
+    font, make sure your [`machine`](../system/machine-types.md) setting is
+    EGA or newer.
+
+
+### Finding out what's available
 
 To see what's available, start DOSBox Staging with the following command line
 arguments:
@@ -82,79 +167,109 @@ arguments:
 
 </div>
 
+You don't need to restart DOSBox Staging to check the keyboard layouts:
+running `KEYB /list` at the DOS prompt shows the same list of layout codes,
+with whichever one is currently active highlighted.
 
-## Configuration settings
+### KEYB and CHCP
 
-### Interface language
+Two commands manage all of this from the DOS prompt:
 
-You can set the interface language in the `[dosbox]` configuration section.
+<div class="compact" markdown>
 
-##### language
+- **`KEYB`** --- changes the keyboard layout, and (unless told otherwise) the
+  screen font that goes with it.
+- **`CHCP`** --- changes *only* the screen font, leaving the current keyboard
+  layout untouched.
 
-:   Select the language of DOSBox Staging's interface messages (`en` by
-    default).
+</div>
 
-    Possible values are `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt_BR`, and
-    `ru`. 
+In short: `CHCP` is font only. `KEYB` is layout, and optionally font too.
+Run `KEYB /?` or `CHCP /?` at the DOS prompt for the full syntax and options.
 
-    !!! note
+Here's how the common cases map onto them:
 
-        English is built-in; the rest is stored in the bundled
-        `resources/translations` folder.
+**Set a keyboard layout and whatever font comes with it:**
 
-### Regional settings
+``` { . .dos-prompt }
+KEYB de
+```
 
-You can set these in the `[dos]` configuration section.
+**Set a keyboard layout *and* a specific font, overriding the
+layout's default:**
 
-##### country
+``` { . .dos-prompt }
+KEYB de 858
+```
 
-:   Set DOS country code (`1` by default, which stands for US English). This
-    affects country-specific information such as date, time, and decimal
-    formats.
+This is the same `LAYOUT [CODEPAGE]` pattern mentioned above (`uk 850` and
+similar) --- it works the same way whether you type it after `KEYB` at the
+prompt or set it as the `keyboard_layout` value in your configuration.
 
-    !!! note
+**Keep the current keyboard layout, and only change the screen font:**
 
-        The list of country codes can be displayed using the
-        [`--list-countries`](../using-dosbox-staging/command-line.md#-list-countries)
-        command-line argument.
+``` { . .dos-prompt }
+CHCP 850
+```
 
+This is the one to reach for when a program assumes a specific code page ---
+usually 437 --- to display correctly, but you don't want your keyboard to
+change. For example, the game
+[Tommy's Manor](https://www.mobygames.com/game/49191/tommys-manor/) expects
+code page 437 on screen; if you're normally running a non-US keyboard
+layout, `CHCP 437` fixes the game's display without losing your keyboard
+layout.
 
-##### keyboard\_layout
+!!! note
 
-:   Keyboard layout code (`us` by default). The layout can be followed by the
-    code page number; e.g., `uk 850` selects a Western European keyboard
-    layout and screen font.
+    `CHCP` can only switch to a code page that your *currently loaded*
+    keyboard layout actually supports. Not every layout supports every code
+    page --- the [`us`](#keyboard_layout) layout is the one exception, and
+    works with any code page. If `CHCP` refuses the page you want, either
+    pick a different page from `--list-code-pages` that your layout does
+    support, or use `KEYB` instead, which can switch to a layout that
+    supports it.
 
-    !!! note "Notes"
+**Use the genuine ROM font, not one of the bundled files:**
 
-        - On a real MS-DOS, you must configure the keyboard layout and the
-          screen font separately; DOSBox Staging sets both from the provided
-          layout and code.
+``` { . .dos-prompt }
+KEYB us /rom
+```
 
-        - The list of keyboard layout codes can be displayed using the
-          [`--list-layouts`](../using-dosbox-staging/command-line.md#-list-layouts)
-          command-line argument; e.g., `uk` is the British English layout.
+This loads the layout using the video adapter's own built-in font instead of
+one of the bundled code page files. It only has an effect when the resulting
+code page is 437 (the ROM only contains that one font) --- for any other code
+page, DOSBox Staging falls back to a bundled or custom file regardless. Mostly
+useful for pixel-perfect accuracy to original hardware; visually, it's usually
+indistinguishable from the bundled 437 font.
 
-        - The list of code pages can be displayed using the
-          [`--list-code-pages`](../using-dosbox-staging/command-line.md#-list-code-pages)
-          command-line argument; e.g., `437` is the original OEM-US code page.
+### Checking what's currently loaded
 
-        - Use the `KEYB` command to manage keyboard layouts and code pages at
-          runtime (run `KEYB /?` for details).
+Running `KEYB` on its own, with no arguments, shows the currently loaded
+keyboard layout and code page --- it doesn't change or reset anything.
 
+This is particularly useful for layouts that support more than one script.
+Several layouts --- for example Russian, Greek, or Arabic ones --- can produce
+both Latin characters and characters from their native script, and you switch
+between the two with a keyboard shortcut. Running `KEYB` with no arguments
+shows you exactly which shortcuts apply to the currently loaded layout, so
+it's worth checking after loading one of these layouts.
 
-##### locale\_period
+### Changing the layout permanently
 
-:   Select which era of locale data to use.
+To make a keyboard layout and code page your default, set them in
+`dosbox-staging.conf`:
 
-    Possible values:
+```ini
+[dos]
+keyboard_layout = de 858
+```
 
-    <div class="compact" markdown>
+This uses the same `LAYOUT [CODEPAGE]` pattern as `KEYB`'s arguments.
 
-    - `historic` -- If data is available for the given country, mimic old DOS
-      behaviour when displaying time, dates, or numbers.
+!!! note
 
-    - `modern` -- Follow current-day practices for a user experience more
-      consistent with typical host systems.
-
-    </div>
+    `keyboard_layout` is only read when DOSBox Staging starts. Changing it
+    afterwards at runtime has no effect on an already-running session (e.g. with
+    `keyboard_layout fr`). If you want to change the keyboard layout or code
+    page mid-session, use the `KEYB` command instead.
