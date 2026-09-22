@@ -25,9 +25,9 @@ its own setting --- you can change any one without touching the others:
 
 | Setting | Controls | Config key |
 |---|---|---|
-| [Interface language](#interface-language) | The language of DOSBox Staging's own menus and messages | `language` |
-| [Country](#country-and-datetime-formatting) | DOS-level date, time, and number formatting | `country`, `locale_period` |
-| [Keyboard layout and code pages](#keyboard-layout-and-code-pages) | Which characters your keys produce, and which characters the screen can display | `keyboard_layout` |
+| [Interface language](#interface-language) | The language of DOSBox Staging's own menus and messages | [`language`](#language) |
+| [Country](#country-and-datetime-formatting) | DOS-level date, time, and number formatting | [`country`(#country)], [`locale_period`](#locale_period) |
+| [Keyboard layout and code pages](#keyboard-layout-and-code-pages) | Which characters your keys produce, and which characters the screen can display | [`keyboard_layout`](#keyboard_layout) |
 
 ## Interface language
 
@@ -69,7 +69,7 @@ layout with a Western European screen font.
 
 On a real MS-DOS machine, you configure the keyboard layout and the screen
 font separately, with different commands. DOSBox Staging simplifies this by
-setting both together from a single `keyboard_layout` value --- but they're
+setting both together from a single [`keyboard_layout`](#keyboard_layout)` value --- but they're
 still two different things underneath, and understanding the difference is
 the key to the rest of this section.
 
@@ -269,7 +269,8 @@ This uses the same `LAYOUT [CODEPAGE]` pattern as `KEYB`'s arguments.
 
 !!! note
 
-    `keyboard_layout` is only read when DOSBox Staging starts. Changing it
-    afterwards at runtime has no effect on an already-running session (e.g. with
-    `keyboard_layout fr`). If you want to change the keyboard layout or code
-    page mid-session, use the `KEYB` command instead.
+    [`keyboard_layout`](#keyboard_layout) is only read when DOSBox Staging
+    starts. Changing it afterwards at runtime has no effect on an
+    already-running session (e.g. with `keyboard_layout fr`). If you want to
+    change the keyboard layout or code page mid-session, use the `KEYB`
+    command instead.
