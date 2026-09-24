@@ -3,37 +3,44 @@
 DOSBox Staging does not try to detect your host operating system's language,
 country, or keyboard layout. It starts the way a typical PC did in the early
 1990s: **US English**, the **US keyboard layout**, and **code page 437** ---
-the character set of the original IBM PC and the default in MS-DOS 6.22.
+the character set of the original IBM PC and the default in MS-DOS.
 
 DOS had no automatic regional detection. If you wanted another country's
-formats or keyboard, you set it up yourself with commands like `COUNTRY` and
-`KEYB`, and a machine without them behaved as a US machine. Most games and
-programs were written and tested on such machines, and some depend on it. For
-example, many draw their menus and borders with [box-drawing
+keyboard layout, character sets, and locale formats, you had to set them up
+manually yourself. If you didn't, your machine a US English machine by
+default. Most games and programs were written and tested on such machines,
+therefore might break with any other locale settings. For example, many draw
+their menus and borders with [box-drawing
 characters](https://en.wikipedia.org/wiki/Box-drawing_characters) from code
 page 437, and others expect US date and number formats. Under a different
 setup, they can show garbled text or misbehave in less obvious ways.
 
-Date, time, and number formatting follows the same idea. The default historic
-[locale period](#locale_period) displays them the way a DOS PC of the era
-would have. If you're playing a game in another language or want a different
-format, the localisation settings discussed in this section let you change the
-regional behaviour.
+Date, time, and number formatting follows the same idea --- the default
+historic [locale period](#locale_period) displays them the way a DOS PC in the
+1980s and 90s would have. However, you can change that to mimic more modern
+locale practices.
 
-Concretely, "localisation" here covers three independent things, each with
-its own setting --- you can change any one without touching the others:
+If you're playing a game in another language or want a different locale
+format, the localisation settings discussed in this section let you change the
+regional behaviour. Concretely, "localisation" here covers three independent
+things, each with its own setting --- you can change any one without touching
+the others:
 
 | Setting | Controls | Config key |
 |---|---|---|
 | [Interface language](#interface-language) | The language of DOSBox Staging's own menus and messages | [`language`](#language) |
-| [Country](#country-and-datetime-formatting) | DOS-level date, time, and number formatting | [`country`(#country)], [`locale_period`](#locale_period) |
+| [Country and locale period](#country-and-datetime-formatting) | DOS-level date, time, and number formatting | [`country`](#country), [`locale_period`](#locale_period) |
 | [Keyboard layout and code pages](#keyboard-layout-and-code-pages) | Which characters your keys produce, and which characters the screen can display | [`keyboard_layout`](#keyboard_layout) |
 
 ## Interface language
 
 The [`language`](#language) setting controls the language of DOSBox Staging's
-own interface messages (not the DOS programs themselves). It can be changed at
-runtime, e.g. by running `language pl`, and has no effect on DOS programs, so
+own interface messages, including the [DOS
+commands](../using-dosbox-staging/commands.md) built into the emulator. It can
+be changed at runtime, e.g. by running `language pl`. The setting has no
+effect on actual DOS programs you install yourself and the small number of
+[bundled third party DOS
+programs](../using-dosbox-staging/commands.md#bundled-third-party-programs), so
 it doesn't matter for DOS compatibility.
 
 The currently bundled translations are German, English, Spanish, French,
@@ -46,34 +53,43 @@ Italian, Dutch, Polish, Brazilian Portuguese, and Russian.
     version, so translated interface messages may occasionally be missing or
     out of date.
 
+!!! note
 
-DOSBox Staging uses the [gettext](https://www.gnu.org/software/gettext/)
-`.po` translation file format, which makes contributing translations
-straightforward with tools like [Poedit](https://poedit.net/).
+    DOSBox Staging uses the [gettext](https://www.gnu.org/software/gettext/)
+    `.po` translation file format, which makes contributing translations
+    straightforward with tools like [Poedit](https://poedit.net/).
 
-## Country and date/time formatting
+
+## Country and locale period
 
 The [`country`](#country) setting controls DOS-level formatting conventions:
 date and time format, decimal separators, currency symbols, and so on.
 
 The [`locale_period`](#locale_period) setting controls whether formatting
-follows historic DOS conventions (how things looked on a real DOS PC of the
-era), modern conventions (consistent with current-day practices).
+follows **historic** DOS conventions (how things looked on a real DOS PC of the
+era), or **modern** conventions (consistent with current-day practices).
 
 ## Keyboard layout and code pages
 
-The [`keyboard_layout`](#keyboard_layout) setting selects the DOS keyboard
-layout, determining which characters are produced by which keys. A layout can
-include a code page suffix --- for example, `uk 850` selects the British
-layout with a Western European screen font.
+The [`keyboard_layout`](#keyboard_layout) setting selects the **DOS keyboard
+layout**, determining which characters are produced by which keys on your
+keyboard. This is very similar to the keyboard layout setting of your host
+operating system --- for example, if you have a German physical keyboard,
+you'd usually want to select the German keyboard layout in your OS
+preferences, otherwise some keys would produce other symbols on the screen
+than what their keycaps indicate.
 
-On a real MS-DOS machine, you configure the keyboard layout and the screen
-font separately, with different commands. DOSBox Staging simplifies this by
-setting both together from a single [`keyboard_layout`](#keyboard_layout)` value --- but they're
-still two different things underneath, and understanding the difference is
-the key to the rest of this section.
+Optionally, a layout can include a numeric **code page** suffix to override
+the default code page automatically choosen by Staging --- for example, `uk
+850` selects the British layout with a Western European code page (also called
+**screen font**). On a real MS-DOS machine, you configure the keyboard layout
+and the code page separately with different commands. DOSBox Staging
+simplifies this; most users should just set something like `keyboard_layout
+de` which will set both together. Still, they're still two different things
+underneath, and understanding the difference is the key to the rest of this
+section.
 
-### Keyboard layout vs. code page
+### Keyboard layout vs code page
 
 **Keyboard layout** is about your *keys*. It's the mapping that decides which
 character each physical key produces --- the reason `Y` and `Z` swap places
@@ -110,7 +126,7 @@ need, you can:
 
 </div>
 
-### Choosing a code page (screen font)
+### Choosing a code page
 
 DOSBox Staging bundles a large collection of code pages, covering far more
 than DOS ever shipped with by default. They're grouped into a few families:
@@ -170,6 +186,28 @@ arguments:
 You don't need to restart DOSBox Staging to check the keyboard layouts:
 running `KEYB /list` at the DOS prompt shows the same list of layout codes,
 with whichever one is currently active highlighted.
+
+
+### Changing the layout permanently
+
+To make a keyboard layout and code page your default, set them in
+`dosbox-staging.conf`:
+
+```ini
+[dos]
+keyboard_layout = de 858
+```
+
+This uses the same `LAYOUT [CODEPAGE]` pattern as `KEYB`'s arguments.
+
+!!! note
+
+    [`keyboard_layout`](#keyboard_layout) is only read when DOSBox Staging
+    starts. Changing it afterwards at runtime has no effect on an
+    already-running session (e.g. with `keyboard_layout fr`). If you want to
+    change the keyboard layout or code page mid-session, use the `KEYB`
+    command instead.
+
 
 ### KEYB and CHCP
 
@@ -243,6 +281,7 @@ page, DOSBox Staging falls back to a bundled or custom file regardless. Mostly
 useful for pixel-perfect accuracy to original hardware; visually, it's usually
 indistinguishable from the bundled 437 font.
 
+
 ### Checking what's currently loaded
 
 Running `KEYB` on its own, with no arguments, shows the currently loaded
@@ -255,22 +294,79 @@ between the two with a keyboard shortcut. Running `KEYB` with no arguments
 shows you exactly which shortcuts apply to the currently loaded layout, so
 it's worth checking after loading one of these layouts.
 
-### Changing the layout permanently
 
-To make a keyboard layout and code page your default, set them in
-`dosbox-staging.conf`:
+## Configuration settings
 
-```ini
-[dos]
-keyboard_layout = de 858
-```
+### Interface language
 
-This uses the same `LAYOUT [CODEPAGE]` pattern as `KEYB`'s arguments.
+You can set the interface language in the `[dosbox]` configuration section.
 
-!!! note
+##### language
 
-    [`keyboard_layout`](#keyboard_layout) is only read when DOSBox Staging
-    starts. Changing it afterwards at runtime has no effect on an
-    already-running session (e.g. with `keyboard_layout fr`). If you want to
-    change the keyboard layout or code page mid-session, use the `KEYB`
-    command instead.
+:   Select the language of DOSBox Staging's interface messages (`en` by
+    default).
+
+    Possible values are `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt_BR`, and
+    `ru`. 
+
+    !!! note
+
+        English is built-in; the rest is stored in the bundled
+        `resources/translations` folder.
+
+### Regional settings
+
+You can set these in the `[dos]` configuration section.
+
+##### country
+
+:   Set DOS country code (`1` by default, which stands for US English). This
+    affects country-specific information such as date, time, and decimal
+    formats.
+
+    !!! note
+
+        The list of country codes can be displayed using the
+        [`--list-countries`](../using-dosbox-staging/command-line.md#-list-countries)
+        command-line argument.
+
+
+##### keyboard\_layout
+
+:   Keyboard layout code (`us` by default). The layout can be followed by the
+    code page number; e.g., `uk 850` selects a Western European keyboard
+    layout and screen font.
+
+    !!! note "Notes"
+
+        - On a real MS-DOS, you must configure the keyboard layout and the
+          screen font separately; DOSBox Staging sets both from the provided
+          layout and code.
+
+        - The list of keyboard layout codes can be displayed using the
+          [`--list-layouts`](../using-dosbox-staging/command-line.md#-list-layouts)
+          command-line argument; e.g., `uk` is the British English layout.
+
+        - The list of code pages can be displayed using the
+          [`--list-code-pages`](../using-dosbox-staging/command-line.md#-list-code-pages)
+          command-line argument; e.g., `437` is the original OEM-US code page.
+
+        - Use the `KEYB` command to manage keyboard layouts and code pages at
+          runtime (run `KEYB /?` for details).
+
+
+##### locale\_period
+
+:   Select which era of locale data to use.
+
+    Possible values:
+
+    <div class="compact" markdown>
+
+    - `historic` -- If data is available for the given country, mimic old DOS
+      behaviour when displaying time, dates, or numbers.
+
+    - `modern` -- Follow current-day practices for a user experience more
+      consistent with typical host systems.
+
+    </div>
