@@ -54,20 +54,36 @@ static void error_handler(const httplib::Request&, httplib::Response& res,
 
 static httplib::Server server;
 
-static void setup_api_handlers()
+static void writes_disabled(const httplib::Request&, httplib::Response& res)
+{
+	json j;
+	j["error"] =
+	        "State-changing requests are disabled; set "
+	        "'webserver_allow_writes = true' to enable them";
+
+	res.status = httplib::StatusCode::Forbidden_403;
+	send_json(res, j);
+}
+
+static void setup_api_handlers(const bool allow_writes)
 {
 	server.Get("/api/v1/cpu/state", CpuStateCommand::Get);
 
 	server.Get("/api/v1/dos/internals", DosInternalsCommand::Get);
 
-	server.Post("/api/v1/dosbox/shutdown", ShutdownCommand::Post);
-
-	server.Post("/api/v1/memory/allocate", AllocMemoryCommand::Post);
-	server.Post("/api/v1/memory/free", FreeMemoryCommand::Post);
 	server.Get("/api/v1/memory/:offset/:len", ReadMemoryCommand::Get);
 	server.Get("/api/v1/memory/:segment/:offset/:len", ReadMemoryCommand::Get);
-	server.Put("/api/v1/memory/:offset", WriteMemoryCommand::Put);
-	server.Put("/api/v1/memory/:segment/:offset", WriteMemoryCommand::Put);
+
+	const auto guard = [&](const httplib::Server::Handler& handler) {
+		return allow_writes ? handler : writes_disabled;
+	};
+
+	server.Post("/api/v1/dosbox/shutdown", guard(ShutdownCommand::Post));
+
+	server.Post("/api/v1/memory/allocate", guard(AllocMemoryCommand::Post));
+	server.Post("/api/v1/memory/free", guard(FreeMemoryCommand::Post));
+	server.Put("/api/v1/memory/:offset", guard(WriteMemoryCommand::Put));
+	server.Put("/api/v1/memory/:segment/:offset", guard(WriteMemoryCommand::Put));
 }
 
 static std::string strip_port(const std::string& host)
@@ -130,14 +146,15 @@ static void setup_host_validation(const std::string& addr, int port)
 	        });
 }
 
-static void run(const std::string addr, const int port, const std::string resource_home)
+static void run(const std::string addr, const int port,
+                const std::string resource_home, const bool allow_writes)
 {
 	const auto config_home = (get_config_dir() / DefaultWebserverDir).string();
 
 	server.set_mount_point("/", config_home);
 	server.set_mount_point("/", resource_home);
 
-	setup_api_handlers();
+	setup_api_handlers(allow_writes);
 	setup_host_validation(addr, port);
 
 	server.set_exception_handler(error_handler);
@@ -157,6 +174,9 @@ static void run(const std::string addr, const int port, const std::string resour
 
 	LOG_INFO("WEBSERVER: Using document root directory '%s'",
 	         config_home.c_str());
+
+	LOG_INFO("WEBSERVER: State-changing requests are %s",
+	         allow_writes ? "enabled" : "disabled");
 
 	auto ok = server.listen(addr, port);
 	if (!ok) {
@@ -185,6 +205,12 @@ static void init_config_settings(SectionProp& section)
 	auto bind_port = section.AddInt("webserver_port", OnlyAtStart, 8086);
 	bind_port->SetMinMax(1, 0xFFFF);
 	bind_port->SetHelp("TCP port to bind to.");
+
+	auto allow_writes = section.AddBool("webserver_allow_writes", OnlyAtStart, false);
+	allow_writes->SetHelp(
+	        "Allow API requests that change emulator state: writing memory, allocating\n"
+	        "and freeing DOS memory, and shutting down DOSBox (disabled by default).\n"
+	        "When disabled, only read-only requests are served.");
 }
 
 } // namespace Webserver
@@ -201,8 +227,9 @@ void WEBSERVER_Init()
 		const auto addr = section->GetString("webserver_bind_address");
 		const auto port = section->GetInt("webserver_port");
 		const auto resource_home = get_resource_path("webserver").string();
+		const auto allow_writes = section->GetBool("webserver_allow_writes");
 
-		std::thread thread(Webserver::run, addr, port, resource_home);
+		std::thread thread(Webserver::run, addr, port, resource_home, allow_writes);
 
 		thread.detach();
 	}
