@@ -27,6 +27,15 @@ private:
 	bool pause = false;
 };
 
+class ReloadSignaturesCommand : public Command {
+public:
+	void Execute() override;
+	static void Post(const httplib::Request& req, httplib::Response& res);
+
+private:
+	int count = 0;
+};
+
 } // namespace Webserver
 
 #endif // DOSBOX_WEBSERVER_DOSBOX_H

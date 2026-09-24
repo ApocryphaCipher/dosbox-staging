@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "private/dosbox.h"
+#include "signatures.h"
+#include "webserver.h"
 
 #include "dosbox.h"
 
@@ -37,6 +39,21 @@ void PauseCommand::PostResume(const httplib::Request&, httplib::Response&)
 {
 	PauseCommand cmd(false);
 	cmd.WaitForCompletion();
+}
+
+void ReloadSignaturesCommand::Execute()
+{
+	count = Signatures::Reload();
+}
+
+void ReloadSignaturesCommand::Post(const httplib::Request&, httplib::Response& res)
+{
+	ReloadSignaturesCommand cmd;
+	cmd.WaitForCompletion();
+
+	nlohmann::json j;
+	j["signatures"] = cmd.count;
+	send_json(res, j);
 }
 
 } // namespace Webserver
