@@ -3,6 +3,7 @@
 
 #include "webserver.h"
 #include "bridge.h"
+#include "private/capture.h"
 #include "private/cpu.h"
 #include "private/dos.h"
 #include "private/dosbox.h"
@@ -56,6 +57,8 @@ static httplib::Server server;
 
 static void setup_api_handlers()
 {
+	server.Post("/api/v1/capture/screenshot", ScreenshotCommand::Post);
+
 	server.Get("/api/v1/cpu/state", CpuStateCommand::Get);
 
 	server.Get("/api/v1/dos/internals", DosInternalsCommand::Get);
