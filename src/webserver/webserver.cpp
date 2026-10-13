@@ -56,6 +56,9 @@ static httplib::Server server;
 
 static void setup_api_handlers()
 {
+	server.Post("/api/v1/dosbox/pause", PauseCommand::PostPause);
+	server.Post("/api/v1/dosbox/resume", PauseCommand::PostResume);
+
 	server.Get("/api/v1/cpu/state", CpuStateCommand::Get);
 
 	server.Get("/api/v1/dos/internals", DosInternalsCommand::Get);
