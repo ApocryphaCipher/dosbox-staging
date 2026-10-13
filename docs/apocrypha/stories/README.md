@@ -8,3 +8,4 @@
 - [STORY-006](STORY-006-viewport-follow-a-signature.md): viewport that follows a signature's last hit (EPIC-001) Not started
 - [STORY-007](STORY-007-protobuf-content-negotiation.md): protobuf on the existing endpoints via `Accept` (EPIC-001, stretch) Not started
 - [STORY-008](STORY-008-dos-memory-map-endpoint.md): `GET /api/v1/dos/memory-map`: where each DOS program was loaded (upstreamable; **nice to have**) Not started
+- [STORY-009](STORY-009-dos-mouse-endpoint.md): `GET /api/v1/dos/mouse`: the DOS mouse position (upstreamable; **nice to have**) Not started
