@@ -70,6 +70,11 @@ static void setup_api_handlers()
 	server.Put("/api/v1/memory/:segment/:offset", WriteMemoryCommand::Put);
 }
 
+static bool is_loopback_address(const std::string_view addr)
+{
+	return addr == "127.0.0.1" || addr == "::1" || addr == "localhost";
+}
+
 static std::string strip_port(const std::string& host)
 {
 	// IPv6 literal: [::1]:8080
@@ -177,10 +182,8 @@ static void init_config_settings(SectionProp& section)
 	                                 OnlyAtStart,
 	                                 "127.0.0.1");
 	bind_ip->SetHelp(
-	        "Bind to the given IP address. This API gives full control over DOSBox, do not\n"
-	        "ever expose this to untrusted hosts.\n"
-	        "\n"
-	        "By default only local connections are allowed.");
+	        "Bind to the given loopback address ('127.0.0.1', '::1', or 'localhost').\n"
+	        "Non-loopback addresses are refused and the web server will not start.");
 
 	auto bind_port = section.AddInt("webserver_port", OnlyAtStart, 8086);
 	bind_port->SetMinMax(1, 0xFFFF);
@@ -196,9 +199,15 @@ void WEBSERVER_Init()
 	auto section = get_section("webserver");
 
 	if (section->GetBool("webserver_enabled")) {
+		const auto addr = section->GetString("webserver_bind_address");
+		if (!Webserver::is_loopback_address(addr)) {
+			LOG_WARNING("WEBSERVER: Refusing to bind to non-loopback address '%s'",
+			            addr.c_str());
+			return;
+		}
+
 		is_webserver_enabled = true;
 
-		const auto addr = section->GetString("webserver_bind_address");
 		const auto port = section->GetInt("webserver_port");
 		const auto resource_home = get_resource_path("webserver").string();
 
