@@ -18,4 +18,25 @@ void ShutdownCommand::Post(const httplib::Request&, httplib::Response&)
 	cmd.WaitForCompletion();
 }
 
+void PauseCommand::Execute()
+{
+	if (pause) {
+		DOSBOX_RequestUserPause();
+	} else {
+		DOSBOX_RequestUserResume();
+	}
+}
+
+void PauseCommand::PostPause(const httplib::Request&, httplib::Response&)
+{
+	PauseCommand cmd(true);
+	cmd.WaitForCompletion();
+}
+
+void PauseCommand::PostResume(const httplib::Request&, httplib::Response&)
+{
+	PauseCommand cmd(false);
+	cmd.WaitForCompletion();
+}
+
 } // namespace Webserver
