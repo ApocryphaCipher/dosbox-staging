@@ -32,3 +32,4 @@ Unsorted, not yet promoted to a story. Each item says how it was found.
   outside the code. Write them into [reference/http-api.md](reference/http-api.md).
 - **`mdl` has not been run on these docs.** It isn't installed on the machine
   they were written on. Run `scripts/linting/verify-markdown.sh`.
+- **Where was the game loaded?** Tools scan memory because nothing in the API says. A read-only `dos/memory-map` endpoint (the MCB chain) fixes that: STORY-008, nice to have. *Found 2026-10-13: the same game sat 0x520 bytes lower in 0.83.0 than in 0.84 because 0.84 reserves memory for DOS STACKS.*
